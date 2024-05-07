@@ -1,0 +1,99 @@
+/*****HELPER JWT*****
+
+import jwt from 'jsonwebtoken'
+
+
+export const generateJWT = ( nombre:string, email: string, estado: boolean) =>{
+
+    return new Promise(( resolve, reject )=>{
+
+        const payload = { nombre, email, estado};
+        jwt.sign( payload, process.env.SECRET_JWT_SEED || 'Esto_es_Una_Palabra_Secreta',{
+            expiresIn: '2h'
+            
+        }, ( err, token )=>{
+            if( err ){
+                console.log(err)
+                reject('No se pudo generar el token')
+            }
+
+            resolve( token )
+        })
+
+    })    
+
+
+
+}
+
+******MIDDLEWARE*******
+    import { Request, Response, NextFunction } from 'express'
+import jwt from 'jsonwebtoken';
+
+export interface CustomRequest extends Request {
+    nombre: string;
+    email: string;
+    estado: boolean;
+}
+
+
+export const validateJWT = ( req: Request, res:Response,next:NextFunction ) =>{
+
+    //*x-token headers
+    const token = req.header('x-token');
+    
+    if( !token ){
+        return res.status(401).json({
+            ok: false,
+            msg: 'No hay token en la peticion'
+        });
+    }
+    
+    //*validate token
+    try {
+
+        const { nombre, email, estado } = jwt.verify( token, process.env.SECRET_JWT_SEED || 'Esto_es_Una_Palabra_Secreta' ) as { nombre: string, email: string, estado:boolean};
+        (req as CustomRequest).nombre = nombre;
+        (req as CustomRequest).email = email;
+        (req as CustomRequest).estado = estado;
+
+
+
+
+    } catch (error) {
+        console.log(error)
+        return res.status(401).json({
+            ok:false,
+            msg:'token is not valid'
+        })
+    }
+
+    next();
+
+}
+
+
+    //*Generar JWT
+        const token = await generateJWT( nombre, email, estado );
+
+
+    *******REVALIDAR EL TOKEN********
+    export const revalidateToken = async ( req: Request, res: Response )=>{
+
+    const nombre = (req as CustomRequest).nombre
+    const email = (req as CustomRequest).email
+    const estado = (req as CustomRequest).estado
+
+    const token = await generateJWT( nombre,email,estado );
+
+    res.json({ ok:true, token })
+
+}
+
+    ROUTAS
+    //*Token
+    router.get('/auth/renew', validateJWT, revalidateToken)
+
+
+*/
+
